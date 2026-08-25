@@ -804,6 +804,7 @@ export function App() {
         preset: 'chatgpt',
         brand: {
           name: 'MyCo',
+          icon: { src: '/myco-icon.svg' },
           logo: { src: '/myco-wordmark.svg' },
         },
       }}

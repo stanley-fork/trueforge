@@ -15,6 +15,7 @@ import { Icon } from '../icons/Icon.js';
 import { useOptionalShellMode } from '../server/ShellModeContext.js';
 import { useBrandName } from '../theme/brand.js';
 import { useSlot } from '../theme/SlotsProvider.js';
+import { useBrand } from '../theme/ThemeProvider.js';
 
 const TruefoundrySettingsBuilder = lazy(() => import('../containers/SettingsBuilder/index.js'));
 
@@ -24,7 +25,9 @@ let desktopCollapsed = false;
 export function SidebarLayout({ className }: { className?: string }) {
   const aui = useAui();
   const shell = useOptionalShellMode();
+  const brand = useBrand();
   const brandName = useBrandName();
+  const hasWideLogo = brand.logo != null || (brand.icon == null && brand.name == null);
   const BrandLogo = useSlot('BrandLogo');
   const AgentsLibraryButton = useSlot('AgentsLibraryButton');
   const ClearChatButton = useSlot('ClearChatButton');
@@ -93,8 +96,13 @@ export function SidebarLayout({ className }: { className?: string }) {
           className={cn('flex shrink-0 items-center px-3 py-3', collapsed ? 'flex-col gap-3' : 'justify-between gap-2')}
         >
           <div className={cn('flex min-w-0 items-center text-text-primary', collapsed ? 'justify-center' : 'gap-2')}>
-            <BrandLogo className="size-5 shrink-0 object-contain" />
-            {!collapsed ? <span className="truncate text-lg font-semibold tracking-tight">{brandName}</span> : null}
+            <BrandLogo
+              variant={collapsed || !hasWideLogo ? 'icon' : 'logo'}
+              className={cn('h-5 max-w-40 shrink-0 object-contain', (collapsed || !hasWideLogo) && 'w-5')}
+            />
+            {!collapsed && !hasWideLogo && brandName != null ? (
+              <span className="truncate text-lg font-semibold tracking-tight">{brandName}</span>
+            ) : null}
           </div>
           <button
             type="button"
@@ -215,8 +223,10 @@ export function SidebarLayout({ className }: { className?: string }) {
             tabIndex={-1}
           >
             <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-3 text-text-primary">
-              <BrandLogo className="size-5 shrink-0 object-contain" />
-              <span className="truncate text-lg font-semibold tracking-tight">{brandName}</span>
+              <BrandLogo variant="logo" className={cn('h-5 max-w-40 shrink-0 object-contain', !hasWideLogo && 'w-5')} />
+              {!hasWideLogo && brandName != null ? (
+                <span className="truncate text-lg font-semibold tracking-tight">{brandName}</span>
+              ) : null}
             </div>
             <ThreadListContainer onThreadOpen={() => setMobileNavOpen(false)} />
           </div>

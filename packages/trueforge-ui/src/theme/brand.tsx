@@ -2,54 +2,71 @@
 
 import { useContext } from 'react';
 
+import { cn } from '../atoms/lib/cn.js';
 import { Icon } from '../icons/Icon.js';
+import TrueForgeLogoDark from '../icons/trueforge-logo-dark.svg';
+import TrueForgeLogoLight from '../icons/trueforge-logo.svg';
 import { ThemeContext } from './ThemeProvider.js';
 import type { BrandLogoConfig } from './types.js';
 
 const DEFAULT_BRAND_NAME = 'TrueForge';
 
 /** Mode-matched source, falling back to the other mode then the mode-agnostic `src`. */
-function resolveLogoSrc({
-  logo,
+function resolveImageSrc({
+  image,
   mode,
 }: {
-  logo: string | BrandLogoConfig;
+  image: string | BrandLogoConfig;
   mode: 'light' | 'dark';
 }): string | undefined {
-  if (typeof logo === 'string') return logo;
-  const preferred = mode === 'dark' ? logo.dark : logo.light;
-  return preferred ?? logo.light ?? logo.dark ?? logo.src;
+  if (typeof image === 'string') return image;
+  const preferred = mode === 'dark' ? image.dark : image.light;
+  return preferred ?? image.light ?? image.dark ?? image.src;
 }
 
-/** Configured brand name, or the SDK default. Safe outside a `ThemeProvider`. */
-export function useBrandName(): string {
-  return useContext(ThemeContext)?.brand.name ?? DEFAULT_BRAND_NAME;
+/** Configured display name, or the SDK default when no custom images are set. */
+export function useBrandName(): string | undefined {
+  const brand = useContext(ThemeContext)?.brand;
+  if (brand?.name != null) return brand.name;
+  return brand?.icon == null && brand?.logo == null ? DEFAULT_BRAND_NAME : undefined;
 }
 
 /**
- * The product mark: `theme.brand.logo` resolved against the active theme mode,
- * labelled with the brand name, and linked when the config carries an `href`.
- * Falls back to the default mark when no logo is configured.
- *
- * Callers that also want the name as text render it themselves — the SDK layouts
- * pair this with `useBrandName()` so each one controls its own arrangement.
+ * The product mark resolved against the active theme mode. Compact surfaces use
+ * `icon`; expanded surfaces use `logo` and fall back to `icon`.
  */
-export function BrandLogo({ className }: { className?: string }) {
+export function BrandLogo({ className, variant = 'icon' }: { className?: string; variant?: 'icon' | 'logo' }) {
   const theme = useContext(ThemeContext);
-  const logo = theme?.brand.logo;
-  const name = theme?.brand.name ?? DEFAULT_BRAND_NAME;
-
+  const brand = theme?.brand;
+  const name = useBrandName();
   const mode = theme?.mode ?? 'light';
-  const src = logo == null ? undefined : resolveLogoSrc({ logo, mode });
+  const preferredImage = variant === 'logo' ? brand?.logo : brand?.icon;
+  const preferredSrc = preferredImage == null ? undefined : resolveImageSrc({ image: preferredImage, mode });
+  const icon = brand?.icon;
+  const src = preferredSrc ?? (variant === 'logo' && icon != null ? resolveImageSrc({ image: icon, mode }) : undefined);
+
   if (src == null) {
+    if (variant === 'logo') {
+      const Wordmark = mode === 'dark' ? TrueForgeLogoDark : TrueForgeLogoLight;
+      // svgr pins width/height to 1em; clearing both lets the viewBox aspect
+      // ratio widen the wordmark to match the caller's height.
+      return (
+        <Wordmark
+          className={cn('w-auto', className)}
+          width={undefined}
+          height={undefined}
+          role="img"
+          aria-label={name ?? DEFAULT_BRAND_NAME}
+        />
+      );
+    }
     return (
       <Icon name={mode === 'dark' ? 'trueforge-logomark-dark' : 'trueforge-logomark-light'} className={className} />
     );
   }
 
-  // `name` is the accessible label: the image itself carries no text alternative.
-  const image = <img src={src} alt={name} className={className} />;
-  const href = typeof logo === 'string' ? undefined : logo?.href;
+  const image = <img src={src} alt={name ?? ''} className={className} />;
+  const href = brand?.href;
   if (href == null) return image;
 
   return (

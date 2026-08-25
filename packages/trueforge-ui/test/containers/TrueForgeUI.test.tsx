@@ -304,7 +304,7 @@ describe('StackChatPanel', () => {
 describe('SidebarLayout', () => {
   it('shows the app brand in the mobile sessions drawer', () => {
     render(
-      <SlotsProvider theme={{ brand: { name: 'Acme', logo: { src: '/acme.svg' } } }}>
+      <SlotsProvider theme={{ brand: { name: 'Acme', icon: { src: '/acme.svg' } } }}>
         <RuntimeHarness messages={[]}>
           <div className="h-96">
             <SidebarLayout />
@@ -320,9 +320,60 @@ describe('SidebarLayout', () => {
     expect(within(drawer).getByAltText('Acme')).toHaveAttribute('src', '/acme.svg');
   });
 
+  it('shows the default wordmark without a name in expanded chrome', () => {
+    const { container } = render(
+      <SlotsProvider>
+        <RuntimeHarness messages={[]}>
+          <div className="h-96">
+            <SidebarLayout />
+          </div>
+        </RuntimeHarness>
+      </SlotsProvider>,
+    );
+
+    const mark = container.querySelector('aside svg');
+    expect(mark).toHaveAttribute('viewBox', '0 0 614 100');
+    expect(screen.queryByText('TrueForge')).not.toBeInTheDocument();
+  });
+
+  it('shows a wide logo when expanded and its square icon when collapsed', () => {
+    const { container } = render(
+      <SlotsProvider theme={{ brand: { name: 'Acme', icon: '/acme-icon.svg', logo: '/acme-wordmark.svg' } }}>
+        <RuntimeHarness messages={[]}>
+          <div className="h-96">
+            <SidebarLayout />
+          </div>
+        </RuntimeHarness>
+      </SlotsProvider>,
+    );
+
+    expect(container.querySelector('aside img')).toHaveAttribute('src', '/acme-wordmark.svg');
+    expect(screen.queryByText('Acme')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(container.querySelector('aside img')).toHaveAttribute('src', '/acme-icon.svg');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand sidebar' }));
+  });
+
+  it('supports icon-only branding in expanded chrome', () => {
+    const { container } = render(
+      <SlotsProvider theme={{ brand: { icon: '/acme-icon.svg' } }}>
+        <RuntimeHarness messages={[]}>
+          <div className="h-96">
+            <SidebarLayout />
+          </div>
+        </RuntimeHarness>
+      </SlotsProvider>,
+    );
+
+    expect(container.querySelector('aside img')).toHaveAttribute('src', '/acme-icon.svg');
+    expect(screen.queryByText('TrueForge')).not.toBeInTheDocument();
+  });
+
   it('shows the brand and toggles the desktop sidebar rail', () => {
     const { unmount } = render(
-      <SlotsProvider theme={{ brand: { name: 'Acme', logo: '/acme.svg' } }}>
+      <SlotsProvider theme={{ brand: { name: 'Acme', icon: '/acme.svg' } }}>
         <RuntimeHarness messages={[]}>
           <div className="h-96">
             <SidebarLayout />
@@ -341,7 +392,7 @@ describe('SidebarLayout', () => {
     // New Chat / Agents remount ChatProvider via runtimeKey; collapse must survive.
     unmount();
     render(
-      <SlotsProvider theme={{ brand: { name: 'Acme', logo: '/acme.svg' } }}>
+      <SlotsProvider theme={{ brand: { name: 'Acme', icon: '/acme.svg' } }}>
         <RuntimeHarness messages={[]}>
           <div className="h-96">
             <SidebarLayout />

@@ -207,7 +207,7 @@ export default function App() {
   }}
   theme={{
     preset: 'claude',
-    brand: { name: 'Acme', logo: '/logo.svg' },
+    brand: { name: 'Acme', icon: '/icon.svg' },
   }}
   overrides={{/* slot overrides */}}
   className="h-full"
@@ -319,7 +319,7 @@ package). Host CSS on `.aui-markdown` / `.aui-syntax-highlighter` / `.aui-openui
 
 ## Brand / logo
 
-**Base layouts** — pass `theme.brand` and the SDK positions the mark + name in the default slots:
+**Base layouts** — pass a square `icon` and optional display `name`. Omit `name` for icon-only branding:
 
 ```tsx
 <TrueForgeUI
@@ -328,14 +328,14 @@ package). Host CSS on `.aui-markdown` / `.aui-syntax-highlighter` / `.aui-openui
   theme={{
     brand: {
       name: 'Acme',
-      logo: '/brand/logo.svg',
+      icon: '/brand/icon.svg',
     },
   }}
 />
 ```
 
-**Light / dark marks** — pass `light` / `dark` sources instead and the SDK picks the one matching
-the resolved mode. `href` wraps the logo in a same-tab link:
+Add a wider `logo` for expanded chrome. A square `icon` is required with it because collapsed
+chrome, the welcome screen, and the widget button continue to use the square asset:
 
 ```tsx
 <TrueForgeUI
@@ -344,13 +344,17 @@ the resolved mode. `href` wraps the logo in a same-tab link:
   theme={{
     brand: {
       name: 'Acme',
-      logo: { light: '/brand/logo-light.svg', dark: '/brand/logo-dark.svg', href: '/' },
+      icon: '/brand/icon.svg',
+      logo: '/brand/wordmark.svg',
+      href: '/',
     },
   }}
 />
 ```
 
-Set only one mode and it is used for both. `name` labels the image, so no `alt` is needed.
+Both `icon` and `logo` accept `{ src, light, dark }`. The SDK picks the source matching the
+resolved mode; setting only one mode uses it for both. `href` wraps configured images in a
+same-tab link. When `name` is omitted, images are decorative.
 
 **Component marks** — `theme.brand` takes image URLs only. To render an inline SVG or a custom
 component, override the `BrandLogo` slot, the same way you replace any other atom:
@@ -359,7 +363,9 @@ component, override the `BrandLogo` slot, the same way you replace any other ato
 <TrueForgeUI server={server} layout="sidebar" overrides={{ BrandLogo: MyMark }} />
 ```
 
-**Custom layouts** — import `BrandLogo` and place it anywhere; pair it with `useBrandName()` when you also want the name as text (see [Custom layouts](#custom-layouts)).
+**Custom layouts** — import `BrandLogo` and use `variant="icon"` for compact surfaces or
+`variant="logo"` for expanded chrome. The logo variant falls back to the square icon. Pair it
+with `useBrandName()` when you also want the optional name as text (see [Custom layouts](#custom-layouts)).
 
 > _Screenshot: external brand mark rendered in the base layout header._
 
@@ -429,17 +435,15 @@ Built-in `layout` values:
 For full control, pass a React component as `layout`. The SDK still wires server, shell mode, slots, and runtime behind it.
 
 ```tsx
-import { Thread, ThreadListContainer, BrandLogo, useBrandName, useTheme } from '@truefoundry/trueforge-ui';
+import { Thread, ThreadListContainer, BrandLogo, useTheme } from '@truefoundry/trueforge-ui';
 
 function Layout({ className }: { className?: string }) {
   const { mode, setTheme } = useTheme();
-  const brandName = useBrandName();
 
   return (
     <div className={className} style={{ display: 'flex', height: '100%' }}>
       <aside style={{ width: 256 }}>
-        <BrandLogo className="size-6" />
-        <span>{brandName}</span>
+        <BrandLogo variant="logo" className="h-6 w-auto max-w-40" />
         <ThreadListContainer />
       </aside>
       <main style={{ flex: 1, minWidth: 0 }}>

@@ -68,29 +68,42 @@ export type IconEntry = IconComponent | ReactNode;
 export type IconMap = Record<string, IconEntry>;
 
 /**
- * Logo sources. `light` / `dark` pick per resolved theme mode and fall back to
- * each other, then to `src`. `href` wraps the logo in a same-tab link. The logo
- * is labelled with `name`; replace the mark itself through the slot table when
- * an image URL is not enough.
+ * Brand image sources. `light` / `dark` pick per resolved theme mode and fall
+ * back to each other, then to `src`.
  */
 export type BrandLogoConfig = {
   src?: string;
   light?: string;
   dark?: string;
+};
+
+export type BrandImage = string | BrandLogoConfig;
+
+/**
+ * Product branding. `icon` is the square mark used in compact surfaces. `logo`
+ * is an optional wider mark used in expanded chrome and falls back to `icon`.
+ */
+type BrandMetadata = {
+  /** Optional display name and accessible label. Omit for icon-only branding. */
+  name?: string;
+  /** Wraps configured brand images in a same-tab link. */
   href?: string;
 };
 
-/**
- * Setting `brand` requires a `name`: it labels the logo, so a logo without one has
- * no accessible name. `logo` is optional — omit it to pair host text with the stock
- * mark.
- */
-export type BrandConfig = {
-  /** Display name, and the logo's accessible label. */
-  name: string;
-  /** Image URL, or per-mode sources. Omit to keep the default mark. */
-  logo?: string | BrandLogoConfig;
-};
+export type BrandConfig = BrandMetadata &
+  (
+    | {
+        /** Square image URL, or per-mode sources. Omit to keep the default mark. */
+        icon?: BrandImage;
+        logo?: never;
+      }
+    | {
+        /** Square image URL, or per-mode sources, used when compact. */
+        icon: BrandImage;
+        /** Wider image URL, or per-mode sources, used when expanded. */
+        logo: BrandImage;
+      }
+  );
 
 export type ContentClassNames = {
   markdown?: string;

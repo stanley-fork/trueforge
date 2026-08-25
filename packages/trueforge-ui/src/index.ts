@@ -17,6 +17,7 @@ export {
 } from './theme/ThemeProvider.js';
 export type {
   BrandConfig,
+  BrandImage,
   BrandLogoConfig,
   ContentClassNames,
   IconMap,
