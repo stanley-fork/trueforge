@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.5-rc.0
+
+### Patch Changes
+
+- b11cfc3: Wire remote chat session deletion and improve the history delete action styling.
+- 3ca4e2e: fixed the button component icon and padding, delete conflicting local prettier.json in trueforge-ui package
+- aa4be44: Open markdown links in assistant messages in a new tab
+- d7015fd: show mcp server tool name on tool approval
+
 ## 0.2.4
 
 ### Patch Changes
